@@ -1,0 +1,15 @@
+{
+    "name": "@lifegpc/libzip",
+    "version": "0.0.1",
+    "fmt": {
+        "indentWidth": 4
+    },
+    "exports": {
+        ".": "./src/mod.ts",
+        "./consts": "./src/consts.ts",
+        "./ffi": "./src/ffi.ts",
+        "./func": "./src/func.ts",
+        "./types": "./src/types.ts"
+    },
+    "unstable": ["ffi"]
+}
