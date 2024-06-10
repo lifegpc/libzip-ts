@@ -19,7 +19,11 @@ function toPointer<T extends PointerObj>(p?: T) {
     return p.obj;
 }
 
-const t = new TextEncoder();
+const _t = new TextEncoder();
+
+function encode(t: string) {
+    return _t.encode(t + "\0");
+}
 
 /**
  * return run-time version of libzip library
@@ -46,7 +50,7 @@ export function zip_open(
     errorp?: IntPointer,
 ): ZipT | null {
     if (typeof path === "string") {
-        path = t.encode(path);
+        path = encode(path);
     }
     const re = lib.symbols.zip_open(path, flags, toPointer(errorp));
     return re ? new ZipT(re) : null;
@@ -130,7 +134,7 @@ export function zip_name_locate(
     flags: ZipFlags | number,
 ): number | bigint {
     if (typeof fname === "string") {
-        fname = t.encode(fname);
+        fname = encode(fname);
     }
     return lib.symbols.zip_name_locate(toPointer(archive), fname, flags);
 }
@@ -161,7 +165,7 @@ export function zip_fopen(
     flags: ZipFlags | number,
 ): ZipFileT | null {
     if (typeof fname === "string") {
-        fname = t.encode(fname);
+        fname = encode(fname);
     }
     const re = lib.symbols.zip_fopen(toPointer(archive), fname, flags);
     return re ? new ZipFileT(re) : null;
@@ -220,10 +224,10 @@ export function zip_fopen_encrypted(
     password: string | BufferSource | null,
 ): ZipFileT | null {
     if (typeof fname === "string") {
-        fname = t.encode(fname);
+        fname = encode(fname);
     }
     if (typeof password === "string") {
-        password = t.encode(password);
+        password = encode(password);
     }
     const re = lib.symbols.zip_fopen_encrypted(
         toPointer(archive),
@@ -258,7 +262,7 @@ export function zip_fopen_index_encrypted(
     password: string | BufferSource | null,
 ): ZipFileT | null {
     if (typeof password === "string") {
-        password = t.encode(password);
+        password = encode(password);
     }
     const re = lib.symbols.zip_fopen_index_encrypted(
         toPointer(archive),
@@ -374,7 +378,7 @@ export function zip_stat(
     sb: ZipStatT,
 ): boolean {
     if (typeof fname === "string") {
-        fname = t.encode(fname);
+        fname = encode(fname);
     }
     return lib.symbols.zip_stat(
         toPointer(archive),
@@ -502,7 +506,7 @@ export function zip_set_default_password(
     password: string | BufferSource | null,
 ): boolean {
     if (typeof password === "string") {
-        password = t.encode(password);
+        password = encode(password);
     }
     return lib.symbols.zip_set_default_password(toPointer(archive), password) ==
         0;
@@ -530,7 +534,7 @@ export function zip_dir_add(
     flags: ZipFlags | number,
 ): number | bigint {
     if (typeof name === "string") {
-        name = t.encode(name);
+        name = encode(name);
     }
     return lib.symbols.zip_dir_add(toPointer(archive), name, flags);
 }
@@ -553,7 +557,7 @@ export function zip_file_add(
     flags: ZipFlags | number,
 ): number | bigint {
     if (typeof name === "string") {
-        name = t.encode(name);
+        name = encode(name);
     }
     return lib.symbols.zip_file_add(
         toPointer(archive),
@@ -756,7 +760,7 @@ export function zip_source_file(
     len: number | bigint | ZipLength,
 ): ZipSourceT | null {
     if (typeof fname === "string") {
-        fname = t.encode(fname);
+        fname = encode(fname);
     }
     const r = lib.symbols.zip_source_file(
         toPointer(archive),
@@ -785,7 +789,7 @@ export function zip_source_file_create(
     error?: ZipErrorT,
 ): ZipSourceT | null {
     if (typeof fname === "string") {
-        fname = t.encode(fname);
+        fname = encode(fname);
     }
     const r = lib.symbols.zip_source_file_create(
         fname,
