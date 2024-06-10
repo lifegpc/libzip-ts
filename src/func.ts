@@ -348,7 +348,7 @@ export function zip_ftell(file: ZipFileT): number | bigint {
  * @returns Upon successful completion 0 is returned. Otherwise, the error code is returned.
  */
 export function zip_fclose(file: ZipFileT): number {
-    return lib.symbols.zip_close(toPointer(file));
+    return lib.symbols.zip_fclose(toPointer(file));
 }
 
 /**
