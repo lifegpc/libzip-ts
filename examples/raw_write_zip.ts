@@ -5,7 +5,7 @@ export function write_zip(path: string, name: string, content: string) {
     if (!zip) {
         throw Error("Failed to open zip file.");
     }
-    const data = (new TextEncoder).encode(content);
+    const data = (new TextEncoder()).encode(content);
     const source = lib.zip_source_buffer(zip, data, data.length, 0);
     if (!source) {
         lib.zip_discard(zip);

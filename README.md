@@ -1,10 +1,17 @@
 # @lifegpc/libzip
+
 Deno ffi warp for [libzip](https://libzip.org/).
+
 # Environments
-* `DENO_LIBZIP_PATH` - Path to libzip.so
+
+- `DENO_LIBZIP_PATH` - Path to libzip.so
+
 # Examples
+
 ## Raw library interfaces
+
 ### Write zip file
+
 ```typescript
 import * as lib from "jsr:/@lifegpc/libzip/raw";
 
@@ -13,7 +20,7 @@ function write_zip(path: string, name: string, content: string) {
     if (!zip) {
         throw Error("Failed to open zip file.");
     }
-    const data = (new TextEncoder).encode(content);
+    const data = (new TextEncoder()).encode(content);
     const source = lib.zip_source_buffer(zip, data, data.length, 0);
     if (!source) {
         lib.zip_discard(zip);

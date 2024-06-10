@@ -36,7 +36,7 @@ export enum ZipOpenFlag {
 /**
  * archive global flags
  * @see https://libzip.org/documentation/zip_get_archive_flag.html#DESCRIPTION
-*/
+ */
 export enum ZipArchiveGlobalFlags {
     /**
      * read only -- cannot be cleared
@@ -131,4 +131,3 @@ export enum ZipFlags {
      */
     OVERWRITE = 8192,
 }
-

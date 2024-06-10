@@ -564,22 +564,22 @@ const symbols = {
     },
     zip_error_init: {
         parameters: [
-            "pointer",  // zip_error_t *error Nonnull
+            "pointer", // zip_error_t *error Nonnull
         ],
         result: "void",
     },
     zip_error_init_with_code: {
         parameters: [
-            "pointer",  // zip_error_t *error Nonnull
-            "i32",  // int ze
+            "pointer", // zip_error_t *error Nonnull
+            "i32", // int ze
         ],
         result: "void",
     },
     zip_error_set: {
         parameters: [
-            "pointer",  // zip_error_t *ze Nullable
-            "i32",  // int le
-            "i32",  // int se
+            "pointer", // zip_error_t *ze Nullable
+            "i32", // int le
+            "i32", // int se
         ],
         result: "void",
     },

@@ -9,7 +9,7 @@ function getCString(p: Deno.PointerObject, offset?: number) {
 }
 
 function toPointer<T extends PointerObj>(p?: T) {
-    if (p === undefined) return Deno.UnsafePointer.create(0);
+    if (p === undefined) return Deno.UnsafePointer.create(0n);
     return p.obj;
 }
 
@@ -175,7 +175,11 @@ export function zip_fopen_index(
     index: number | bigint,
     flags: ZipFlags | number,
 ): ZipFileT | null {
-    const re = lib.symbols.zip_fopen_index(toPointer(archive), index, flags);
+    const re = lib.symbols.zip_fopen_index(
+        toPointer(archive),
+        BigInt(index),
+        flags,
+    );
     return re ? new ZipFileT(re) : null;
 }
 
@@ -243,7 +247,7 @@ export function zip_fopen_index_encrypted(
     }
     const re = lib.symbols.zip_fopen_index_encrypted(
         toPointer(archive),
-        index,
+        BigInt(index),
         flags,
         password,
     );
@@ -267,7 +271,7 @@ export function zip_fread(file: ZipFileT, buf: Uint8Array): number | bigint {
     return lib.symbols.zip_fread(
         toPointer(file),
         Deno.UnsafePointer.of(buf),
-        buf.length,
+        BigInt(buf.length),
     );
 }
 
@@ -357,7 +361,7 @@ export function zip_source_buffer(
     const r = lib.symbols.zip_source_buffer(
         toPointer(archive),
         data,
-        len,
+        BigInt(len),
         freep,
     );
     return r ? new ZipSourceT(r, data) : null;
@@ -388,7 +392,7 @@ export function zip_source_buffer_create(
 ): ZipSourceT | null {
     const r = lib.symbols.zip_source_buffer_create(
         data,
-        len,
+        BigInt(len),
         freep,
         toPointer(error),
     );
