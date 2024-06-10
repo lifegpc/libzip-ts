@@ -3,59 +3,70 @@
  */
 /**
  * Flags when opening file
- * @link https://libzip.org/documentation/zip_open.html#DESCRIPTION
+ * 
+ * See https://libzip.org/documentation/zip_open.html#DESCRIPTION
  */
 export enum ZipOpenFlag {
     /**
      * Error if archive already exists.
-     * @link https://libzip.org/documentation/zip_open.html#ZIP_EXCL
+     * 
+     * See https://libzip.org/documentation/zip_open.html#ZIP_EXCL
      */
     ZIP_CREATE = 1,
     /**
      * Error if archive already exists.
-     * @link https://libzip.org/documentation/zip_open.html#ZIP_EXCL
+     * 
+     * See https://libzip.org/documentation/zip_open.html#ZIP_EXCL
      */
     EXCL = 2,
     /**
      * Perform additional stricter consistency checks on the archive, and error if they fail.
-     * @link https://libzip.org/documentation/zip_open.html#ZIP_CHECKCONS
+     * 
+     * See https://libzip.org/documentation/zip_open.html#ZIP_CHECKCONS
      */
     CHECKCONS = 4,
     /**
      * If archive exists, ignore its current contents. In other words, handle it the same way as an empty archive.
-     * @link https://libzip.org/documentation/zip_open.html#ZIP_TRUNCATE
+     * 
+     * See https://libzip.org/documentation/zip_open.html#ZIP_TRUNCATE
      */
     TRUNCATE = 8,
     /**
      * Open archive in read-only mode.
-     * @link https://libzip.org/documentation/zip_open.html#ZIP_RDONLY
+     * 
+     * See https://libzip.org/documentation/zip_open.html#ZIP_RDONLY
      */
     RDONLY = 16,
 }
 
 /**
  * archive global flags
- * @link https://libzip.org/documentation/zip_get_archive_flag.html#DESCRIPTION
+ * 
+ * See https://libzip.org/documentation/zip_get_archive_flag.html#DESCRIPTION
  */
 export enum ZipArchiveGlobalFlags {
     /**
      * read only -- cannot be cleared
-     * @link https://libzip.org/documentation/zip_get_archive_flag.html#ZIP_AFL_RDONLY
+     * 
+     * See https://libzip.org/documentation/zip_get_archive_flag.html#ZIP_AFL_RDONLY
      */
     RDONLY = 2,
     /**
      * current archive is torrentzipped
-     * @link https://libzip.org/documentation/zip_get_archive_flag.html#ZIP_AFL_IS_TORRENTZIP
+     * 
+     * See https://libzip.org/documentation/zip_get_archive_flag.html#ZIP_AFL_IS_TORRENTZIP
      */
     IS_TORRENTZIP = 4,
     /**
      * write archive in torrentzip format
-     * @link https://libzip.org/documentation/zip_get_archive_flag.html#ZIP_AFL_WANT_TORRENTZIP
+     * 
+     * See https://libzip.org/documentation/zip_get_archive_flag.html#ZIP_AFL_WANT_TORRENTZIP
      */
     WANT_TORRENTZIP = 8,
     /**
      * don't remove file if archive is empty
-     * @link https://libzip.org/documentation/zip_get_archive_flag.html#ZIP_AFL_CREATE_OR_KEEP_FILE_FOR_EMPTY_ARCHIVE
+     * 
+     * See https://libzip.org/documentation/zip_get_archive_flag.html#ZIP_AFL_CREATE_OR_KEEP_FILE_FOR_EMPTY_ARCHIVE
      */
     CREATE_OR_KEEP_FILE_FOR_EMPTY_ARCHIVE = 16,
 }
@@ -66,22 +77,26 @@ export enum ZipArchiveGlobalFlags {
 export enum ZipFlags {
     /**
      * ignore case on name lookup
-     * @link https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_NOCASE
+     * 
+     * See https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_NOCASE
      */
     NOCASE = 1,
     /**
      * ignore directory component
-     * @link https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_NODIR
+     * 
+     * See https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_NODIR
      */
     NODIR = 2,
     /**
      * read compressed data
-     * @link https://libzip.org/documentation/zip_fopen.html#ZIP_FL_COMPRESSED
+     * 
+     * See https://libzip.org/documentation/zip_fopen.html#ZIP_FL_COMPRESSED
      */
     COMPRESSED = 4,
     /**
      * use original data, ignoring changes
-     * @link https://libzip.org/documentation/zip_fopen.html#ZIP_FL_UNCHANGED
+     * 
+     * See https://libzip.org/documentation/zip_fopen.html#ZIP_FL_UNCHANGED
      */
     UNCHANGED = 8,
     /**
@@ -94,17 +109,20 @@ export enum ZipFlags {
     ENCRYPTED = 32,
     /**
      * guess string encoding (is default)
-     * @link https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_GUESS
+     * 
+     * See https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_GUESS
      */
     ENC_GUESS = 0,
     /**
      * get unmodified string
-     * @link https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_RAW
+     * 
+     * See https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_RAW
      */
     ENC_RAW = 64,
     /**
      * follow specification strictly
-     * @link https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_STRICT
+     * 
+     * See https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_STRICT
      */
     ENC_STRICT = 128,
     /**
@@ -117,17 +135,20 @@ export enum ZipFlags {
     CENTRAL = 512,
     /**
      * string is UTF-8 encoded
-     * @link https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_UTF_8
+     * 
+     * See https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_UTF_8
      */
     ENC_UTF_8 = 2048,
     /**
      * string is CP437 encoded
-     * @link https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_CP437
+     * 
+     * See https://libzip.org/documentation/zip_name_locate.html#ZIP_FL_ENC_CP437
      */
     ENC_CP437 = 4096,
     /**
      * zip_file_add: if file with name exists, overwrite (replace) it
-     * @link https://libzip.org/documentation/zip_file_add.html#ZIP_FL_OVERWRITE
+     * 
+     * See https://libzip.org/documentation/zip_file_add.html#ZIP_FL_OVERWRITE
      */
     OVERWRITE = 8192,
 }
