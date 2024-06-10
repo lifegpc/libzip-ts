@@ -1,7 +1,13 @@
 import lib from "./ffi.ts";
 import type { IntPointer, PointerObj, ZipErrorT, ZipStatT } from "./types.ts";
 import { ZipFileT, ZipSourceT, ZipT } from "./types.ts";
-import type { ZipArchiveGlobalFlags, ZipFlags, ZipOpenFlag } from "./consts.ts";
+import type {
+    ZipArchiveGlobalFlags,
+    ZipCM,
+    ZipFlags,
+    ZipLength,
+    ZipOpenFlag,
+} from "./consts.ts";
 
 function getCString(p: Deno.PointerObject, offset?: number) {
     const v = new Deno.UnsafePointerView(p);
@@ -405,6 +411,131 @@ export function zip_stat_index(
 }
 
 /**
+ * return if a compression method is supported
+ *
+ * The zip_compression_method_supported() returns if the compression method method is supported for compression (if compress is true) or decompression (otherwise).
+ *
+ * See https://libzip.org/documentation/zip_compression_method_supported.html
+ * @param method Compression method
+ * @param compress check compression or decompression.
+ * @returns true if the method is supported, false otherwise.
+ */
+export function zip_compression_method_supported(
+    method: ZipCM,
+    compress: boolean,
+): boolean {
+    return lib.symbols.zip_compression_method_supported(
+        method,
+        compress ? 0 : 1,
+    ) == 1;
+}
+
+/**
+ * get name of file by index
+ *
+ * The {@linkcode zip_get_name} function returns the name of the file at position index in archive.
+ * The name is in UTF-8 encoding unless {@linkcode ZipFlags.ENC_RAW} was specified.
+ * If flags is set to {@linkcode ZipFlags.UNCHANGED}, the original unchanged filename is returned.
+ * The returned string must not be modified or freed, and becomes invalid when archive is closed.
+ *
+ * See https://libzip.org/documentation/zip_get_name.html
+ * @param archive Zip archive
+ * @param index File index
+ * @param flags Flags. See {@linkcode ZipFlags}
+ * @returns Upon successful completion, the name is returned. Otherwise, null and the error code in archive is set to indicate the error.
+ */
+export function zip_get_name(
+    archive: ZipT,
+    index: number | bigint,
+    flags: ZipFlags | number,
+): string | null {
+    const re = lib.symbols.zip_get_name(
+        toPointer(archive),
+        BigInt(index),
+        flags,
+    );
+    return re ? getCString(re) : null;
+}
+
+/**
+ * get number of entries in archive
+ *
+ * The {@linkcode zip_get_num_entries} function returns the number of entries in archive.
+ * Entries are all files that are present in the original archive or that were added while
+ * the archive is open. This includes deleted files, since indices are not renumbered until
+ * the archive is closed. (This allows to refer to deleted files, e. g. to undelete them.)
+ * If flags is set to {@linkcode ZipFlags.UNCHANGED}, the original number of files is returned.
+ *
+ * See https://libzip.org/documentation/zip_get_num_entries.html
+ * @param archive Zip archive
+ * @param flags Flags. See {@linkcode ZipFlags}
+ * @returns the number of entries in the zip archive.
+ */
+export function zip_get_num_entries(
+    archive: ZipT,
+    flags: ZipFlags | number,
+): number | bigint {
+    return lib.symbols.zip_get_num_entries(toPointer(archive), flags);
+}
+
+/**
+ * set default password for encrypted files in zip
+ *
+ * The {@linkcode zip_set_default_password} function sets the default password used when accessing
+ * encrypted files. If password is null or the empty string, the default password is unset.
+ * If you prefer a different password for single files, use {@linkcode zip_fopen_encrypted} instead
+ * of {@linkcode zip_fopen}. Usually, however, the same password is used for every file in
+ * an zip archive.
+ *
+ * The password is not verified when calling this function.
+ * See the [CAVEATS](https://libzip.org/documentation/zip_fopen_encrypted.html#CAVEATS) section
+ * in {@linkcode zip_fopen_encrypted} for more details about password handling.
+ *
+ * See https://libzip.org/documentation/zip_set_default_password.html
+ * @param archive Zip archive
+ * @param password Password
+ * @returns Upon successful completion true is returned.
+ * Otherwise, false is returned and the error information in archive is set to indicate the error.
+ */
+export function zip_set_default_password(
+    archive: ZipT,
+    password: string | BufferSource | null,
+): boolean {
+    if (typeof password === "string") {
+        password = t.encode(password);
+    }
+    return lib.symbols.zip_set_default_password(toPointer(archive), password) ==
+        0;
+}
+
+/**
+ * add directory to zip archive
+ *
+ * The function {@linkcode zip_dir_add} adds a directory to a zip archive.
+ * The argument archive specifies the zip archive to which the directory should be added.
+ * name is the directory's name in the zip archive.
+ * This function adds an entry to the archive. It does not check whether a directory with
+ * that name exists in the file system, nor does it add its contents if it does.
+ *
+ * See https://libzip.org/documentation/zip_dir_add.html
+ * @param archive Zip archive
+ * @param name Directory's name
+ * @param flags Flags. See {@linkcode ZipFlags}
+ * @returns Upon successful completion, the index of the new entry in the archive is returned.
+ * Otherwise, -1 is returned and the error code in archive is set to indicate the error.
+ */
+export function zip_dir_add(
+    archive: ZipT,
+    name: string | BufferSource,
+    flags: ZipFlags | number,
+): number | bigint {
+    if (typeof name === "string") {
+        name = t.encode(name);
+    }
+    return lib.symbols.zip_dir_add(toPointer(archive), name, flags);
+}
+
+/**
  * add file to zip archive
  *
  * See https://libzip.org/documentation/zip_file_add.html
@@ -430,6 +561,93 @@ export function zip_file_add(
         toPointer(source),
         flags,
     );
+}
+
+/**
+ * replace file in zip archive
+ *
+ * replaces an existing file in a zip archive.
+ *
+ * See https://libzip.org/documentation/zip_file_replace.html
+ * @param archive Zip archive
+ * @param index Which file should be replaced
+ * @param source Data source.
+ * @param flags Flags. see {@linkcode ZipFlags}
+ * @returns Upon successful completion, returns true.
+ * Otherwise, false is returned and the error code in archive is set to indicate the error.
+ */
+export function zip_file_replace(
+    archive: ZipT,
+    index: number | bigint,
+    source: ZipSourceT,
+    flags: ZipFlags | number,
+): boolean {
+    return lib.symbols.zip_file_replace(
+        toPointer(archive),
+        BigInt(index),
+        toPointer(source),
+        flags,
+    ) == 0;
+}
+
+/**
+ * set comment for file in zip
+ *
+ * The {@linkcode zip_file_set_comment} function sets the comment for the file at position index
+ * in the zip archive to comment of length len. If comment is null and len is 0, the file comment
+ * will be removed.
+ *
+ * See https://libzip.org/documentation/zip_file_set_comment.html
+ * @param archive Zip archive
+ * @param index File index
+ * @param comment Comment
+ * @param len The length for comment
+ * @param flags Flags. see {@linkcode ZipFlags}
+ * @returns Upon successful completion true is returned.
+ * Otherwise, false is returned and the error information in archive is set to indicate the error.
+ */
+export function zip_file_set_comment(
+    archive: ZipT,
+    index: number | bigint,
+    comment: BufferSource | null,
+    len: number,
+    flags: ZipFlags | number,
+): boolean {
+    return lib.symbols.zip_file_set_comment(
+        toPointer(archive),
+        BigInt(index),
+        comment,
+        len,
+        flags,
+    ) == 0;
+}
+
+/**
+ * set compression method for file in zip
+ *
+ * The {@linkcode zip_set_file_compression} function sets the compression method for the file at
+ * position index in the zip archive to comp with the compression method specific comp_flags.
+ *
+ * See https://libzip.org/documentation/zip_set_file_compression.html
+ * @param archive Zip archive
+ * @param index File index
+ * @param comp is the same as returned by {@linkcode zip_stat}. See {@linkcode ZipCM}
+ * @param comp_flags The compression level.
+ * @returns Upon successful completion true is returned.
+ * Otherwise, false is returned and the error information in archive is set to indicate the error.
+ */
+export function zip_set_file_compression(
+    archive: ZipT,
+    index: number | bigint,
+    comp: ZipCM,
+    comp_flags: number,
+): boolean {
+    return lib.symbols.zip_set_file_compression(
+        toPointer(archive),
+        BigInt(index),
+        comp,
+        comp_flags,
+    ) == 0;
 }
 
 /**
@@ -521,6 +739,95 @@ export function zip_source_buffer_create(
 }
 
 /**
+ * create data source from a file
+ *
+ * See https://libzip.org/documentation/zip_source_file.html
+ * @param archive Zip archive
+ * @param fname The path to the file.
+ * @param start Offset
+ * @param len Length of data. See {@linkcode ZipLength}
+ * @returns Upon successful completion, the created source is returned.
+ * Otherwise, null is returned and the error code in archive is set to indicate the error.
+ */
+export function zip_source_file(
+    archive: ZipT,
+    fname: string | BufferSource,
+    start: number | bigint,
+    len: number | bigint | ZipLength,
+): ZipSourceT | null {
+    if (typeof fname === "string") {
+        fname = t.encode(fname);
+    }
+    const r = lib.symbols.zip_source_file(
+        toPointer(archive),
+        fname,
+        BigInt(start),
+        BigInt(len),
+    );
+    return r ? new ZipSourceT(r) : null;
+}
+
+/**
+ * create data source from a file
+ *
+ * See https://libzip.org/documentation/zip_source_file_create.html
+ * @param fname The path to the file.
+ * @param start Offset
+ * @param len Length of data. See {@linkcode ZipLength}
+ * @param error The pointer to receive the corresponding error.
+ * @returns Upon successful completion, the created source is returned.
+ * Otherwise, null is returned and the error is set to indicate the error.
+ */
+export function zip_source_file_create(
+    fname: string | BufferSource,
+    start: number | bigint,
+    len: number | bigint | ZipLength,
+    error?: ZipErrorT,
+): ZipSourceT | null {
+    if (typeof fname === "string") {
+        fname = t.encode(fname);
+    }
+    const r = lib.symbols.zip_source_file_create(
+        fname,
+        BigInt(start),
+        BigInt(len),
+        toPointer(error),
+    );
+    return r ? new ZipSourceT(r) : null;
+}
+
+/**
+ * free zip data source
+ *
+ * Decrements the reference count of source and frees it if the reference count drops to 0.
+ * If source is null, it does nothing.
+ *
+ * NOTE: This function should not be called on a source after it was used successfully in a
+ * {@linkcode zip_open_from_source}, {@linkcode zip_file_add}, or {@linkcode zip_file_replace} call.
+ *
+ * https://libzip.org/documentation/zip_source_free.html
+ * @param source Data source
+ */
+export function zip_source_free(source?: ZipSourceT): void {
+    lib.symbols.zip_source_free(toPointer(source));
+}
+
+/**
+ * delete file from zip archive
+ *
+ * The file at position index in the zip archive archive is marked as deleted.
+ *
+ * See https://libzip.org/documentation/zip_delete.html
+ * @param archive Zip archive
+ * @param index File index
+ * @returns Upon successful completion true is returned.
+ * Otherwise, false is returned and the error code in archive is set to indicate the error.
+ */
+export function zip_delete(archive: ZipT, index: number | bigint): boolean {
+    return lib.symbols.zip_delete(toPointer(archive), BigInt(index)) == 0;
+}
+
+/**
  * Close zip archive
  *
  * Writes any changes made to archive to disk. If archive contains no files,
@@ -552,4 +859,80 @@ export function zip_close(archive: ZipT): boolean {
  */
 export function zip_discard(archive: ZipT): void {
     return lib.symbols.zip_discard(toPointer(archive));
+}
+
+/**
+ * create human-readable string for {@linkcode ZipErrorT}
+ *
+ * The {@linkcode zip_error_strerror} function returns an error message string corresponding
+ * to ze like [strerror](https://man7.org/linux/man-pages/man3/strerror.3.html).
+ * This string will stay valid until the next call to {@linkcode zip_error_strerror} or
+ * until {@linkcode zip_error_fini} is called.
+ *
+ * See https://libzip.org/documentation/zip_error_strerror.html
+ * @param ze error
+ * @returns error message
+ */
+export function zip_error_strerror(ze: ZipErrorT): string {
+    const re = lib.symbols.zip_error_strerror(toPointer(ze));
+    return getCString(re!);
+}
+
+/**
+ * get string representation for a zip error
+ *
+ * returns a string describing the last error for a zip file.
+ *
+ * See https://libzip.org/documentation/zip_file_strerror.html
+ * @param file Zip file
+ * @returns error string
+ */
+export function zip_file_strerror(file: ZipFileT): string {
+    const re = lib.symbols.zip_file_strerror(toPointer(file));
+    return getCString(re!);
+}
+
+/**
+ * get string representation for a zip error
+ *
+ * returns a string describing the last error for the zip archive
+ *
+ * See https://libzip.org/documentation/zip_strerror.html
+ * @param archive Zip archive
+ * @returns error string
+ */
+export function zip_strerror(archive: ZipT): string {
+    const re = lib.symbols.zip_strerror(toPointer(archive));
+    return getCString(re!);
+}
+
+/**
+ * initialize {@linkcode ZipErrorT} structure
+ *
+ * See https://libzip.org/documentation/zip_error_init.html
+ * @param error Error
+ */
+export function zip_error_init(error: ZipErrorT): void {
+    lib.symbols.zip_error_init(toPointer(error));
+}
+
+/**
+ * initialize {@linkcode ZipErrorT} structure
+ *
+ * See https://libzip.org/documentation/zip_error_init_with_code.html
+ * @param error Error
+ * @param ze zip error code
+ */
+export function zip_error_init_with_code(error: ZipErrorT, ze: number): void {
+    lib.symbols.zip_error_init_with_code(toPointer(error), ze);
+}
+
+/**
+ * clean up {@linkcode ZipErrorT} structure
+ *
+ * See https://libzip.org/documentation/zip_error_fini.html
+ * @param error error
+ */
+export function zip_error_fini(error: ZipErrorT): void {
+    lib.symbols.zip_error_fini(toPointer(error));
 }

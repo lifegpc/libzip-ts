@@ -214,3 +214,65 @@ export enum ZipStat {
      */
     FLAGS = 0x0100,
 }
+
+/**
+ * Zip compression methods
+ */
+export enum ZipCM {
+    /**better of deflate or store*/
+    DEFAULT = -1,
+    /**stored (uncompressed)*/
+    STORE = 0,
+    /**shrunk*/
+    SHRINK = 1,
+    /**reduced with factor 1*/
+    REDUCE_1 = 2,
+    /**reduced with factor 2*/
+    REDUCE_2 = 3,
+    /**reduced with factor 3*/
+    REDUCE_3 = 4,
+    /**reduced with factor 4*/
+    REDUCE_4 = 5,
+    /**imploded*/
+    IMPLODE = 6,
+    /**deflated*/
+    DEFLATE = 8,
+    /**deflate64*/
+    DEFLATE64 = 9,
+    /**PKWARE imploding*/
+    PKWARE_IMPLODE = 10,
+    /**compressed using BZIP2 algorithm*/
+    BZIP2 = 12,
+    /**LZMA (EFS)*/
+    LZMA = 14,
+    /**compressed using IBM TERSE (new)*/
+    TERSE = 18,
+    /**IBM LZ77 z Architecture (PFS)*/
+    LZ77 = 19,
+    /**LZMA 2*/
+    LZMA2 = 33,
+    /**Zstandard compressed data*/
+    ZSTD = 93,
+    /**XZ compressed data*/
+    XZ = 95,
+    /**Compressed Jpeg data*/
+    JPEG = 96,
+    /**WavPack compressed data*/
+    WAVPACK = 97,
+    /**PPMd version I, Rev 1*/
+    PPMD = 98,
+}
+
+/**
+ * length parameter to various functions
+ */
+export enum ZipLength {
+    /**Assume length are size when functions are called*/
+    TO_END = 0,
+    /**
+     * only supported by zip_source_file and its variants
+     *
+     * See https://libzip.org/documentation/zip_source_file.html
+     */
+    UNCHECKED = -2,
+}

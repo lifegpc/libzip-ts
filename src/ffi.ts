@@ -279,7 +279,7 @@ const symbols = {
     zip_source_file: {
         parameters: [
             "pointer", // zip_t *archive Nonnull
-            "pointer", // const char *fname Nonnull
+            "buffer", // const char *fname Nonnull
             "u64", // zip_uint64_t start
             "i64", // zip_int64_t len
         ],
@@ -287,7 +287,7 @@ const symbols = {
     },
     zip_source_file_create: {
         parameters: [
-            "pointer", // const char *fname Nonnull
+            "buffer", // const char *fname Nonnull
             "u64", // zip_uint64_t start
             "i64", // zip_int64_t len
             "pointer", // zip_error_t *error Nullable
@@ -588,6 +588,12 @@ const symbols = {
             "pointer", // const zip_error_t *ze Nonnull
         ],
         result: "i32",
+    },
+    zip_error_fini: {
+        parameters: [
+            "pointer", // zip_error_t *ze Nonnull
+        ],
+        result: "void",
     },
 } as const satisfies Deno.ForeignLibraryInterface;
 
