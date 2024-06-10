@@ -1,5 +1,5 @@
 import lib from "./ffi.ts";
-import type { IntPointer, PointerObj, ZipErrorT } from "./types.ts";
+import type { IntPointer, PointerObj, ZipErrorT, ZipStatT } from "./types.ts";
 import { ZipFileT, ZipSourceT, ZipT } from "./types.ts";
 import type { ZipArchiveGlobalFlags, ZipFlags, ZipOpenFlag } from "./consts.ts";
 
@@ -17,7 +17,7 @@ const t = new TextEncoder();
 
 /**
  * return run-time version of libzip library
- * 
+ *
  * See https://libzip.org/documentation/zip_libzip_version.html
  * @returns {string} return run-time version of libzip library
  */
@@ -27,7 +27,7 @@ export function zip_libzip_version(): string {
 
 /**
  * Open a zip archive.
- * 
+ *
  * See https://libzip.org/documentation/zip_open.html
  * @param path Path to zip archive.
  * @param flags Open flags. See {@linkcode ZipOpenFlag}.
@@ -50,7 +50,7 @@ export function zip_open(
  * Open a zip archive.
  *
  * Opens a zip archive encapsulated by the zip_source zs using the provided flags. In case of error, the zip_error ze is filled in.
- * 
+ *
  * See https://libzip.org/documentation/zip_open_from_source.html
  * @param zs Source.
  * @param flags Open flags. See {@linkcode ZipOpenFlag}
@@ -79,7 +79,7 @@ export function zip_open_from_source(
  * archive can only be opened in read-only mode.
  * The fd argument may not be used any longer after calling zip_fdopen.
  * The flags are specified to {@linkcode ZipOpenFlag.CHECKCONS} or 0.
- * 
+ *
  * See https://libzip.org/documentation/zip_fdopen.html
  * @param fd The file descriptor
  * @param flags Open flags. Can be {@linkcode ZipOpenFlag.CHECKCONS} or 0.
@@ -111,7 +111,7 @@ export function zip_fdopen(
  * guess the encoding of fname.
  *
  * Only CP-437 and UTF-8 are recognized.
- * 
+ *
  * See https://libzip.org/documentation/zip_name_locate.html
  * @param archive Zip archive
  * @param fname File name
@@ -141,7 +141,7 @@ export function zip_name_locate(
  * If encrypted data is encountered, the functions call {@linkcode zip_fopen_encrypted}
  * or {@linkcode zip_fopen_index_encrypted} respectively, using the default password
  * set with {@linkcode zip_set_default_password}.
- * 
+ *
  * See https://libzip.org/documentation/zip_fopen.html
  * @param archive Zip archive
  * @param fname File name
@@ -169,7 +169,7 @@ export function zip_fopen(
  * If encrypted data is encountered, the functions call {@linkcode zip_fopen_encrypted}
  * or {@linkcode zip_fopen_index_encrypted} respectively, using the default password
  * set with {@linkcode zip_set_default_password}.
- * 
+ *
  * See https://libzip.org/documentation/zip_fopen_index.html
  * @param archive Zip archive
  * @param index File index
@@ -198,7 +198,7 @@ export function zip_fopen_index(
  * If password is null or the empty string, the default password is used (see
  * {@linkcode zip_set_default_password}).
  * The flags argument are the same as for {@linkcode zip_fopen}.
- * 
+ *
  * See https://libzip.org/documentation/zip_fopen_encrypted.html
  * @param archive Zip archive.
  * @param fname File name.
@@ -236,7 +236,7 @@ export function zip_fopen_encrypted(
  * These functions are called automatically by {@linkcode zip_fopen};
  * you only need to call them if you want to specify a non-default password
  * (see {@linkcode zip_set_default_password}).
- * 
+ *
  * See https://libzip.org/documentation/zip_fopen_index_encrypted.html
  * @param archive Zip archive.
  * @param index File index.
@@ -269,7 +269,7 @@ export function zip_fopen_index_encrypted(
  * The {@linkcode zip_fread} function read from file into buf from the current position in the
  * file (see {@linkcode zip_fseek}). After reading, the current position is updated by the
  * number of bytes read.
- * 
+ *
  * See https://libzip.org/documentation/zip_fopen_index_encrypted.html
  * @param file Zip file
  * @param buf Buffer
@@ -286,10 +286,57 @@ export function zip_fread(file: ZipFileT, buf: Uint8Array): number | bigint {
 }
 
 /**
+ * seek in file
+ *
+ * The {@linkcode zip_fseek} function seeks to the specified offset relative to whence, just like
+ * [fseek](https://man7.org/linux/man-pages/man3/ftell.3.html).
+ * {@linkcode zip_fseek} only works on uncompressed (stored), unencrypted data.
+ * When called on compressed or encrypted data it will return an error.
+ *
+ * See https://libzip.org/documentation/zip_fseek.html
+ * @param file Zip file
+ * @param offset Offset
+ * @param whence Base position
+ * @returns If successful, {@linkcode zip_fseek} returns true. Otherwise, false is returned.
+ */
+export function zip_fseek(
+    file: ZipFileT,
+    offset: number | bigint,
+    whence: number,
+): boolean {
+    return lib.symbols.zip_fseek(toPointer(file), BigInt(offset), whence) == 0;
+}
+
+/**
+ * Check if a file is seekable
+ *
+ * See https://libzip.org/documentation/zip_file_is_seekable.html
+ * @param file Zip file
+ * @returns 1 if a file is seekable and 0 if not. On an invalid argument, it returns -1.
+ */
+export function zip_file_is_seekable(file: ZipFileT): number {
+    return lib.symbols.zip_file_is_seekable(toPointer(file));
+}
+
+/**
+ * tell position in file
+ *
+ * The {@linkcode zip_ftell} function reports the current offset in the file.
+ *
+ * See https://libzip.org/documentation/zip_ftell.html
+ * @param file Zip file
+ * @returns If successful, {@linkcode zip_ftell} returns the current file position.
+ * Otherwise, -1 is returned.
+ */
+export function zip_ftell(file: ZipFileT): number | bigint {
+    return lib.symbols.zip_ftell(toPointer(file));
+}
+
+/**
  * close file in zip archive
  *
  * The {@linkcode zip_fclose} function closes file and frees the memory allocated for it.
- * 
+ *
  * See https://libzip.org/documentation/zip_fclose.html
  * @param file Zip file
  * @returns Upon successful completion 0 is returned. Otherwise, the error code is returned.
@@ -299,8 +346,67 @@ export function zip_fclose(file: ZipFileT): number {
 }
 
 /**
+ * get information about file
+ *
+ * The {@linkcode zip_stat} function obtains information about the file named fname in archive.
+ * The flags argument specifies how the name lookup should be done.
+ * Its values are described in {@linkcode zip_name_locate}.
+ * Also, {@linkcode ZipFlags.UNCHANGED} may be or'ed to it to request information about the
+ * original file in the archive, ignoring any changes made.
+ *
+ * See https://libzip.org/documentation/zip_stat.html
+ * @param archive Zip archive
+ * @param fname File name
+ * @param flags Flags. See {@linkcode ZipFlags}
+ * @param sb A pointer to receive stats.
+ * @returns Upon successful completion true is returned. Otherwise, false is returned and the error information in archive is set to indicate the error.
+ */
+export function zip_stat(
+    archive: ZipT,
+    fname: string | BufferSource,
+    flags: ZipFlags | number,
+    sb: ZipStatT,
+): boolean {
+    if (typeof fname === "string") {
+        fname = t.encode(fname);
+    }
+    return lib.symbols.zip_stat(
+        toPointer(archive),
+        fname,
+        flags,
+        toPointer(sb),
+    ) == 0;
+}
+
+/**
+ * get information about file
+ *
+ * The {@linkcode zip_stat_index} function obtains information about the file at position index.
+ *
+ * See https://libzip.org/documentation/zip_stat_index.html
+ * @param archive Zip archive
+ * @param index file index
+ * @param flags {@linkcode ZipFlags.UNCHANGED} may be or'ed to it to request information about the original file in the archive, ignoring any changes made.
+ * @param sb A pointer to receive stats.
+ * @returns Upon successful completion true is returned. Otherwise, false is returned and the error information in archive is set to indicate the error.
+ */
+export function zip_stat_index(
+    archive: ZipT,
+    index: number | bigint,
+    flags: ZipFlags | number,
+    sb: ZipStatT,
+): boolean {
+    return lib.symbols.zip_stat_index(
+        toPointer(archive),
+        BigInt(index),
+        flags,
+        toPointer(sb),
+    ) == 0;
+}
+
+/**
  * add file to zip archive
- * 
+ *
  * See https://libzip.org/documentation/zip_file_add.html
  * @param archive specifies the zip archive to which the file should be added
  * @param name the file's name in the zip archive.
@@ -333,7 +439,7 @@ export function zip_file_add(
  * for the archive archive. The archive flags might have been changed with
  * {@linkcode zip_set_archive_flag}; if flags is set to {@linkcode ZipFlags.UNCHANGED},
  * the original unchanged flags are tested.
- * 
+ *
  * See https://libzip.org/documentation/zip_get_archive_flag.html
  * @param archive Zip archive
  * @param flag Zip status flags. See {@linkcode ZipArchiveGlobalFlags}
@@ -357,7 +463,7 @@ export function zip_get_archive_flag(
  * the created source.
  *
  * The source can be used to open a zip archive from.
- * 
+ *
  * See https://libzip.org/documentation/zip_source_buffer.html
  * @param archive Zip archive
  * @param data Buffer
@@ -390,7 +496,7 @@ export function zip_source_buffer(
  * the created source.
  *
  * The source can be used to open a zip archive from.
- * 
+ *
  * See https://libzip.org/documentation/zip_source_buffer_create.html
  * @param data Buffer
  * @param len Data length
@@ -426,7 +532,7 @@ export function zip_source_buffer_create(
  *
  * Progress updates for GUIs can be implemented using {@linkcode zip_register_progress_callback_with_state}.
  * Cancelling the write of an archive during {@linkcode zip_close} can be implemented using {@linkcode zip_register_cancel_callback_with_state}.
- * 
+ *
  * See https://libzip.org/documentation/zip_close.html
  * @param archive Zip archive pointer
  * @returns Upon successful completion true is returned. Otherwise, false is returned and the error code in archive is set to indicate the error.
@@ -440,7 +546,7 @@ export function zip_close(archive: ZipT): boolean {
  *
  * Closes archive and frees the memory allocated for it.
  * Any changes to the archive are not written to disk and discarded.
- * 
+ *
  * See https://libzip.org/documentation/zip_discard.html
  * @param archive Zip archive pointer
  */
