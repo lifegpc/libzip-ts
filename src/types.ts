@@ -18,7 +18,17 @@ export class ZipT extends PointerObj {}
 /**
  * Zip source pointer
  */
-export class ZipSourceT extends PointerObj {}
+export class ZipSourceT extends PointerObj {
+    #buffer?: BufferSource | null;
+    constructor(obj: Deno.PointerObject, buffer?: BufferSource | null) {
+        super(obj);
+        this.#buffer = buffer;
+    }
+}
+/**
+ * Zip file pointer
+ */
+export class ZipFileT extends PointerObj {}
 
 /**
  * Zip error pointer
@@ -57,7 +67,8 @@ export class ZipErrorT extends PointerObj {
      * Create a new pointer
      * @returns new pointer
      */
-    static new() {
+    // deno-lint-ignore no-misused-new
+    static new(): ZipErrorT {
         const b = new Int32Array(4);
         const p = Deno.UnsafePointer.of(b)!;
         return new ZipErrorT(p, b);
@@ -89,7 +100,8 @@ export class IntPointer extends PointerObj {
      * @param i value
      * @returns new pointer
      */
-    static new(i?: number) {
+    // deno-lint-ignore no-misused-new
+    static new(i?: number): IntPointer {
         const b = new Int32Array([i ?? 0]);
         const p = Deno.UnsafePointer.of(b)!;
         return new IntPointer(p, b);

@@ -6,10 +6,14 @@
     },
     "exports": {
         ".": "./src/mod.ts",
-        "./consts": "./src/consts.ts",
-        "./ffi": "./src/ffi.ts",
-        "./func": "./src/func.ts",
-        "./types": "./src/types.ts"
+        "./raw": "./src/raw.ts"
     },
-    "unstable": ["ffi"]
+    "unstable": ["ffi"],
+    "publish": {
+        "include": [
+            "src/*.ts",
+            "LICENSE",
+            "README.md"
+        ]
+    }
 }

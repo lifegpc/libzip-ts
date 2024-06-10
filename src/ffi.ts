@@ -261,7 +261,7 @@ const symbols = {
     zip_source_buffer: {
         parameters: [
             "pointer", // zip_t *archive Nonnull
-            "pointer", // const void *data Nullable
+            "buffer", // const void *data Nullable
             "u64", // zip_uint64_t len
             "i32", // int freep
         ],
@@ -269,7 +269,7 @@ const symbols = {
     },
     zip_source_buffer_create: {
         parameters: [
-            "pointer", // const void *data Nullable
+            "buffer", // const void *data Nullable
             "u64", // zip_uint64_t len
             "i32", // int freep
             "pointer", // zip_error_t *error Nullable
@@ -561,6 +561,27 @@ const symbols = {
             "pointer", // zip_t *archive Nonnull
         ],
         result: "pointer", // zip_error_t * Nonnull
+    },
+    zip_error_init: {
+        parameters: [
+            "pointer",  // zip_error_t *error Nonnull
+        ],
+        result: "void",
+    },
+    zip_error_init_with_code: {
+        parameters: [
+            "pointer",  // zip_error_t *error Nonnull
+            "i32",  // int ze
+        ],
+        result: "void",
+    },
+    zip_error_set: {
+        parameters: [
+            "pointer",  // zip_error_t *ze Nullable
+            "i32",  // int le
+            "i32",  // int se
+        ],
+        result: "void",
     },
     zip_error_system_type: {
         parameters: [
